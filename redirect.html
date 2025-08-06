@@ -7,42 +7,51 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+    }
+    #login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
     }
     #login-container button {
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
     }
+    #conteudo-site {
+      display: none;
+      padding: 20px;
+    }
   </style>
 </head>
-<body style="display: none;" id="protected-body">
-  
+<body>
   <!-- Área de login -->
-  <div id="login-container" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column;">
+  <div id="login-container">
     <h2>Bem-vindo ao portal da DCA</h2>
     <button onclick="login()">Entrar com Outlook</button>
   </div>
 
-  <!-- Conteúdo do site protegido -->
-  <div id="conteudo-site" style="display: none; padding: 20px;">
+  <!-- Conteúdo protegido -->
+  <div id="conteudo-site">
     <h1>Área interna da DCA</h1>
     <p>Você está logado com sucesso usando sua conta Outlook ou @dca.com.br.</p>
-    <!-- Você pode colocar seus links internos aqui -->
     <ul>
       <li><a href="index.html">Intranet</a></li>
-     
     </ul>
     <button onclick="logout()">Sair</button>
   </div>
 
-  <!-- Script de autenticação Microsoft -->
+  <!-- MSAL Script -->
   <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
   <script>
     const msalConfig = {
       auth: {
-        clientId: "6df3153f-e15a-409b-b870-c5ff7c631067", // Seu clientId
+        clientId: "6df3153f-e15a-409b-b870-c5ff7c631067",
         authority: "https://login.microsoftonline.com/common",
-        redirectUri: window.location.href
+        redirectUri: "https://dionathanpmatos.github.io/Dcalink" // Redireciona corretamente ao GitHub Pages
       }
     };
 
@@ -50,13 +59,11 @@
 
     msalInstance.handleRedirectPromise().then(response => {
       const account = response?.account || msalInstance.getAllAccounts()[0];
-      if (account) {
-        const email = account.username;
 
-        // Verifica domínio permitido
-        if (email.endsWith("@dca.com.br") || email.ends) {
+      if (account) {
+        const email = account.username.toLowerCase();
+        if (email.endsWith("@dca.com.br") || email.endsWith("@outlook.com")) {
           document.getElementById("login-container").style.display = "none";
-          document.getElementById("protected-body").style.display = "block";
           document.getElementById("conteudo-site").style.display = "block";
         } else {
           alert("Apenas usuários autorizados podem acessar.");
@@ -65,6 +72,9 @@
       } else {
         document.getElementById("login-container").style.display = "flex";
       }
+    }).catch(error => {
+      console.error("Erro na autenticação:", error);
+      document.getElementById("login-container").style.display = "flex";
     });
 
     function login() {
