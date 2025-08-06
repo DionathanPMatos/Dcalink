@@ -10,6 +10,12 @@
 </head>
 <body>
     <!-- Header -->
+     <body style="display: none;" id="protected-body">
+    <div id="login-container" style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column;">
+        <h2>Bem-vindo ao portal da DCA</h2>
+        <button onclick="login()" style="padding: 10px 20px; font-size: 16px;">Entrar com Outlook</button>
+    </div>
+
     <header class="header">
         <div class="container">
             <h1 class="logo">
@@ -41,7 +47,7 @@
                             Comercial
                         </h3>
                         <ul class="category-links">
-                            <li><a href="https://0a2941.mannesoft.com.br/mannesoft/sistema.php?ACAO=publico/caixa_trabalho_crm.php&mnsSetRef=1" target="_blank" class="category-link">CRM</a></li>
+                            <li><a href="https://0a2941.mannesoft.com.br/mannesoft/sistema.php?ACAO=publico/caixa_trabalho_crm.php&mnsSetRef=1" target="_blank" class="category-link">CRM - Mannesoft</a></li>
 							<li><a href="campanhas.html" target="_blank" class="category-link">Campanhas Vigentes</a></li>
 							<li><a href="https://outlook.office.com/mail/inbox/id/AAQkADVjYmFiYjU0LTE5MjEtNGJjYS05MTJiLTQ4N2E5YjhiOGRlMwAQAIJZ5p7qaZtDrZ3v3vG1E1s%3D" target="_blank" class="category-link">E-mail Corporativo</a></li>
                             <li><a href="https://deltacable-my.sharepoint.com/personal/velozo_dca_com_br/_layouts/15/onedrive.aspx?CT=1754400564022&OR=OWA-NT-Mail&CID=b0ad5c0c-c34a-28be-c88b-154bcaed8c10&e=5%3A874222f6f01d45ca8af2604d50cdf73e&sharingv2=true&fromShare=true&at=9&id=%2Fpersonal%2Fvelozo_dca_com_br%2FDocuments%2FDocumentos%2F2025%2FEQUIPE%2FACOMPANHAMENTO%20EQUIPE&FolderCTID=0x012000623E3129A515494788B7F6C761F8D148&view=0" target="_blank" class="category-link">Forecast</a></li>
@@ -305,6 +311,42 @@
     </footer>
 
     <script src="script.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
+<script>
+    const msalConfig = {
+        auth: {
+            clientId: "6df3153f-e15a-409b-b870-c5ff7c631067", // <-- Substitua pelo seu Client ID do Azure
+            authority: "https://login.microsoftonline.com/common",
+            redirectUri: window.location.href
+        }
+    };
+
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // Tenta detectar retorno do login
+    msalInstance.handleRedirectPromise().then(response => {
+        const account = response?.account || msalInstance.getAllAccounts()[0];
+        if (account) {
+            const email = account.username;
+
+            // Validação do domínio permitido
+            if (email.endsWith("@dca.com.br") || email.endsWith("@outlook.com")) {
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("protected-body").style.display = "block";
+            } else {
+                alert("Apenas usuários autorizados podem acessar este portal.");
+                msalInstance.logoutRedirect();
+            }
+        }
+    });
+
+    function login() {
+        msalInstance.loginRedirect({
+            scopes: ["openid", "email", "profile"]
+        });
+    }
+</script>
+
 </body>
 </html>
 
